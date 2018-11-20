@@ -11,7 +11,7 @@
  ***************************************************************/
 
 $EM_CONF[$_EXTKEY] = [
-    'title' => 'Extension Builder',
+    'title' => 'Extension Builder (Modificada CEIS)',
     'description' => 'The Extension Builder helps you build and manage your Extbase based TYPO3 extensions. Consider using the latest version from https://github.com/FriendsOfTYPO3/extension_builder',
     'category' => 'module',
     'author' => 'Nico de Haen',
@@ -19,7 +19,7 @@ $EM_CONF[$_EXTKEY] = [
     'state' => 'beta',
     'uploadfolder' => true,
     'createDirs' => 'uploads/tx_extensionbuilder/backups',
-    'version' => '9.10.0',
+    'version' => '9.10.1',
     'constraints' => [
         'depends' => [
             'typo3' => '9.2.0-9.5.99'
