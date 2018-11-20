@@ -537,11 +537,6 @@ class FileGenerator
                 $destinationEIDFile = 'Classes/EID/Util.php';
                 $fileContents = $this->generateUtilEIDCode();
                 $this->writeFile($this->extensionDirectory . $destinationEIDFile, $fileContents);
-                GeneralUtility::devlog(
-                    'Generated Util.php',
-                    'extension_builder',
-                    0
-                );
 
                 foreach ($this->extension->getDomainObjects() as $domainObject) {
                     /**
@@ -573,14 +568,17 @@ class FileGenerator
                     );
 
                     if ($domainObject->isAggregateRoot()) {
+                        $destinationFile = $domainRepositoryDirectory . $domainObject->getName() . 'Repository.php';
+                        $fileContents = $this->generateDomainRepositoryCode($domainObject);
+                        $fileContents = preg_replace('#^[ \t]+$#m', '', $fileContents);
+                        $this->writeFile($this->extensionDirectory . $destinationFile, $fileContents);
+                        $this->extension->setMD5Hash($this->extensionDirectory . $destinationFile);
+                    }
+
+                    if ($domainObject->isAggregateRoot()) {
                         $destinationEIDFile = 'Classes/EID/'. $domainObject->getName() .'EID.php';
                         $fileContents = $this->generateEidCode($domainObject, $mergeWithExistingClass);
                         $this->writeFile($this->extensionDirectory . $destinationEIDFile, $fileContents);
-                        GeneralUtility::devlog(
-                            'Generated ' . $domainObject->getName() . 'EID.php',
-                            'extension_builder',
-                            0
-                        );
                         $this->extension->setMD5Hash($this->extensionDirectory . $destinationFile);
                     }
 
@@ -595,6 +593,25 @@ class FileGenerator
             // Generate Action Controller
             try {
                 $this->mkdir_deep($this->extensionDirectory, 'Classes/Controller');
+                $this->mkdir_deep($this->extensionDirectory, 'Classes/Controller/PHPExcel');
+
+                $this->upload_copy_move(
+                    ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Classes/Controller/PHPExcel.php',
+                    $this->extensionDirectory.'Classes/Controller/PHPExcel.php'
+                );
+
+                $this->recurse_copy(
+                    ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Classes/Controller/PHPExcel/',
+                    $this->extensionDirectory.'Classes/Controller/PHPExcel/'
+                );
+
+                $this->mkdir_deep($this->extensionDirectory, 'Classes/EID');
+
+                \TYPO3\CMS\Core\Utility\GeneralUtility::upload_copy_move(
+                    ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Classes/EID/uploadFileEID.php',
+                    $this->extensionDirectory.'Classes/EID/uploadFileEID.php'
+                );
+
                 $controllerDirectory = 'Classes/Controller/';
                 foreach ($this->extension->getDomainObjectsForWhichAControllerShouldBeBuilt() as $domainObject) {
                     $destinationFile = $controllerDirectory . $domainObject->getName() . 'Controller.php';
@@ -1389,6 +1406,22 @@ class FileGenerator
         }
     }
 
+    private function recurse_copy($src,$dst) {
+        $dir = opendir($src);
+        @mkdir($dst);
+        while(false !== ( $file = readdir($dir)) ) {
+            if (( $file != '.' ) && ( $file != '..' )) {
+                if ( is_dir($src . '/' . $file) ) {
+                    $this->recurse_copy($src . '/' . $file,$dst . '/' . $file);
+                }
+                else {
+                    copy($src . '/' . $file,$dst . '/' . $file);
+                }
+            }
+        }
+        closedir($dir);
+    }
+
     private function generateUtilEIDCode()
     {
         return $this->renderTemplate(
@@ -1399,7 +1432,7 @@ class FileGenerator
         );
     }
 
-    private function generateEidCode($domainObject, $mergeWithExistingClass)
+    private function generateEidCode($domainObject)
     {
         return $this->renderTemplate(
             'Classes/EID/ModelEID.phpt',
