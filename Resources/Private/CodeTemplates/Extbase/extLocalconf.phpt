@@ -52,3 +52,6 @@ call_user_func(
 		</f:for>
     }
 );
+
+<f:for each="{extension.domainObjects}" as="domainObject"><f:if condition="{domainObject.aggregateRoot}"><f:then>
+$GLOBALS['TYPO3_CONF_VARS']['FE']['eID_include']['{extension.extensionKey}_<k:format.lowercaseFirst>{domainObject.name}</k:format.lowercaseFirst>'] = 'EXT:{extension.extensionKey}/Classes/EID/{domainObject.name}EID.php';</f:then></f:if></f:for>

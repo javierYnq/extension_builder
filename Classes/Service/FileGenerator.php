@@ -531,11 +531,28 @@ class FileGenerator
                 $this->mkdir_deep($this->extensionDirectory, 'Tests/Unit/Controller');
                 $crudEnabledControllerTestsDirectory = $this->extensionDirectory . 'Tests/Unit/Controller/';
 
+                $this->mkdir_deep($this->extensionDirectory, 'Classes/EID/');
+
+                //Generate utility class
+                $destinationEIDFile = 'Classes/EID/Util.php';
+                $fileContents = $this->generateUtilEIDCode();
+                $this->writeFile($this->extensionDirectory . $destinationEIDFile, $fileContents);
+                GeneralUtility::devlog(
+                    'Generated Util.php',
+                    'extension_builder',
+                    0
+                );
+
                 foreach ($this->extension->getDomainObjects() as $domainObject) {
                     /**
                      * @var \EBT\ExtensionBuilder\Domain\Model\DomainObject $domainObject
                      */
                     $destinationFile = $domainModelDirectory . $domainObject->getName() . '.php';
+                    if ($this->fileShouldBeMerged($destinationFile)) {
+                        $mergeWithExistingClass = true;
+                    } else {
+                        $mergeWithExistingClass = false;
+                    }
 
                     $fileContents = $this->generateDomainObjectCode($domainObject);
                     $fileContents = preg_replace('#^[ \t]+$#m', '', $fileContents);
@@ -556,10 +573,14 @@ class FileGenerator
                     );
 
                     if ($domainObject->isAggregateRoot()) {
-                        $destinationFile = $domainRepositoryDirectory . $domainObject->getName() . 'Repository.php';
-                        $fileContents = $this->generateDomainRepositoryCode($domainObject);
-                        $fileContents = preg_replace('#^[ \t]+$#m', '', $fileContents);
-                        $this->writeFile($this->extensionDirectory . $destinationFile, $fileContents);
+                        $destinationEIDFile = 'Classes/EID/'. $domainObject->getName() .'EID.php';
+                        $fileContents = $this->generateEidCode($domainObject, $mergeWithExistingClass);
+                        $this->writeFile($this->extensionDirectory . $destinationEIDFile, $fileContents);
+                        GeneralUtility::devlog(
+                            'Generated ' . $domainObject->getName() . 'EID.php',
+                            'extension_builder',
+                            0
+                        );
                         $this->extension->setMD5Hash($this->extensionDirectory . $destinationFile);
                     }
 
@@ -1366,5 +1387,29 @@ class FileGenerator
                 $tmpBasePath .= $subDirectory . '/';
             }
         }
+    }
+
+    private function generateUtilEIDCode()
+    {
+        return $this->renderTemplate(
+            'Classes/EID/Util.phpt',
+            array(
+                'espacioNombre' => $this->extension->getNamespaceName() . '\\EID'
+            )
+        );
+    }
+
+    private function generateEidCode($domainObject, $mergeWithExistingClass)
+    {
+        return $this->renderTemplate(
+            'Classes/EID/ModelEID.phpt',
+            array(
+                'espacioNombre' => $this->extension->getNamespaceName(),
+                'extension' => $this->extension,
+                'domainObject' => $domainObject,
+                'lcdomainRepositoryClassName' => lcfirst($domainObject->getDomainRepositoryClassName()),
+                'lcdomainName' => lcfirst($domainObject->getName()),
+            )
+        );
     }
 }
