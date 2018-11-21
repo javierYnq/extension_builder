@@ -4,5 +4,5 @@
     'renderType' => 'inputDateTime',
     'size' => 7,
     'eval' => 'date<f:if condition="{property.required}">,required</f:if>',
-    'default' => null,
+    'default' => '000-00-00',
 ],

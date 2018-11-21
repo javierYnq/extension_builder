@@ -1,1 +1,1 @@
-f:form.textfield property="{property.name}"
+f:form.textfield property="{property.name}"  class="form-control" type="number" additionalAttributes="{step: '0.01',min: 0}"

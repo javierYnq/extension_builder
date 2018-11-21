@@ -1,1 +1,1 @@
-{namespace k=EBT\ExtensionBuilder\ViewHelpers}f:form.textfield property="{property.name}" value="<f:format.raw><k:curlyBrackets>{domainObject.name-> k:format.lowercaseFirst()}.{property.name}->f:format.date()</k:curlyBrackets></f:format.raw>"
+f:form.textfield property="{property.name}.date" class="form-control bootstrapDatepicker"  value="<k:curlyBrackets>{domainObject.name-> k:format.lowercaseFirst()}.{property.name}->f:format.date(format:'d-m-Y')</k:curlyBrackets>"

@@ -1,1 +1,9 @@
-span>File upload is not implemented!</span><br
+f:form.select
+        id="{property.name}"
+        property="{property.name}"
+        options="<k:curlyBrackets>{property.name}s</k:curlyBrackets>"
+        optionValueField="uid"
+        multiple="true"
+        optionLabelField="uid"
+        class="form-control"
+        size="5"

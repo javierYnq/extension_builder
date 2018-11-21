@@ -1,1 +1,8 @@
-f:form.checkbox property="{property.name}" value="1"
+<f:format.raw>
+<div class="checkbox">
+        <label>
+            <k:openingTag>f:form.checkbox property="{property.name}" value="1"/</k:openingTag>
+            <k:openingTag>f:translate key="{property.labelNamespace}" /</k:openingTag>
+        </label>
+</div>
+</f:format.raw>
