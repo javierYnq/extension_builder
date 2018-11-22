@@ -542,7 +542,6 @@ class ClassBuilder implements SingletonInterface
      */
     protected function buildActionMethod(Model\DomainObject\Action $action, Model\DomainObject $domainObject)
     {
-        error_log("buildActionMethod");
         $actionName = $action->getName();
         $actionMethodName = $actionName . 'Action';
         if ($this->templateClassObject->methodExists($actionMethodName)) {
@@ -570,13 +569,123 @@ class ClassBuilder implements SingletonInterface
             }
         }
 
+
+        //Generate Excel Action
+        $propertiesCounter = 0;
+        $excelHeader ="";
+        $excelData = "";
+        foreach ($domainObject->getProperties() as $domainProperty) {
+            $propertyName = $domainProperty->getName();
+            $propertyDescription = $domainProperty->getDescription();
+            $excelHeader.="\$excel->getActiveSheet()->SetCellValue(\\PHPExcel_Cell::stringFromColumnIndex($propertiesCounter).'1', '".ucfirst($propertyDescription)."');\n";
+            if(strpos($domainProperty->getDataType(),'DateTime') !== false || strpos($domainProperty->getDataType(),'Date') !== false){
+                $excelData.="\$excel->getActiveSheet()->SetCellValue(\\PHPExcel_Cell::stringFromColumnIndex($propertiesCounter).\$excelRowCounter, \$".lcfirst($domainObject->getName())."->get".ucfirst($propertyName)."() == null ? \$noInfo : \$".lcfirst($domainObject->getName())."->get".ucfirst($propertyName)."()->format('d/m/Y'));\n";
+            }else if(strpos($domainProperty->getDataType(),'Relation') !== false){
+                $excelData.="\$excel->getActiveSheet()->SetCellValue(\\PHPExcel_Cell::stringFromColumnIndex($propertiesCounter).\$excelRowCounter, \$".lcfirst($domainObject->getName())."->get".ucfirst($propertyName)."() == null ? \$noInfo : \$".lcfirst($domainObject->getName())."->get".ucfirst($propertyName)."()->getUid());\n";
+            }else {
+                $excelData .= "\$excel->getActiveSheet()->SetCellValue(\\PHPExcel_Cell::stringFromColumnIndex($propertiesCounter).\$excelRowCounter, empty(\$" . lcfirst($domainObject->getName()) . "->get" . ucfirst($propertyName) . "()) ? \$noInfo : \$" . lcfirst($domainObject->getName()) . "->get" . ucfirst($propertyName) . "());\n";
+            }
+            $propertiesCounter++;
+        }
+
+        $excelHeader = substr($excelHeader, 1, -2);
+        $excelData = substr($excelData, 1, -2);
+        //End Generate Excel
+
+        //Generate CSV Action
+        $csvHeader ="\$output, array(";
+        $csvData = "\$output, array(\n";
+        foreach ($domainObject->getProperties() as $domainProperty) {
+            $propertyName = $domainProperty->getName();
+            $propertyDescription = $domainProperty->getDescription();
+            $csvHeader.="\n	\"".ucfirst($propertyDescription)."\", ";
+            if(strpos($domainProperty->getDataType(),'DateTime') !== false || strpos($domainProperty->getDataType(),'Date') !== false){
+                $csvData.="	\$".lcfirst($domainObject->getName())."->get".ucfirst($propertyName)."() == null ? \$noInfo : \$".lcfirst($domainObject->getName())."->get".ucfirst($propertyName)."()->format('d/m/Y'),\n";
+            }else if(strpos($domainProperty->getDataType(),'Relation') !== false){
+                $csvData.="	\$".lcfirst($domainObject->getName())."->get".ucfirst($propertyName)."() == null ? \$noInfo : \$".lcfirst($domainObject->getName())."->get".ucfirst($propertyName)."()->getUid(),\n";
+            }else {
+                $csvData .= "	empty(\$" . lcfirst($domainObject->getName()) . "->get" . ucfirst($propertyName) . "()) ? \$noInfo : \$" . lcfirst($domainObject->getName()) . "->get" . ucfirst($propertyName) . "(),\n";
+            }
+        }
+
+        $csvHeader = substr($csvHeader, 1, -2);
+        $csvHeader.="\n	)\n";
+        $csvData = substr($csvData, 1, -2);
+        $csvData.="\n)";
+        //End Generate CSV Action
+
+        //Generate CSV import action
+        $csvImport = "\$nuevoRegistro = new ".$domainObject->getFullQualifiedClassName()."();\n";
+        $propertiesCount = "count = ".count($domainObject->getProperties());
+        $count = 0;
+        foreach ($domainObject->getProperties() as $domainProperty) {
+            $propertyName = $domainProperty->getName();
+            if(strpos($domainProperty->getDataType(),'DateTime') !== false || strpos($domainProperty->getDataType(),'Date') !== false){
+                $csvImport.="\$nuevoRegistro->set".ucfirst($propertyName)."(\\DateTime::createFromFormat('d/m/Y',\$data_array[$count]) == false ? null : \\DateTime::createFromFormat('d/m/Y',\$data_array[$count]));\n";
+            }else if(strpos($domainProperty->getDataType(),'Relation') !== false){
+                $csvImport.="if(\$this->".lcfirst($propertyName)."Repository->findByUid(\$data_array[$count]) != null){\n";
+                $csvImport.="	\$nuevoRegistro->set".ucfirst($propertyName)."(\$this->".lcfirst($propertyName)."Repository->findByUid(\$data_array[$count]));\n";
+                $csvImport.="}else{\n	\$resultado->error = true;\n	\$resultado->mensaje.='El ".ucfirst($propertyName)." de la línea ' . \$current_row . ' es no válido o no existe.<br>';\n}\n";
+            }else {
+                $csvImport.="\$nuevoRegistro->set".ucfirst($propertyName)."(\$data_array[$count]);\n";
+            }
+            $count++;
+        }
+
+        $csvImport = substr($csvImport, 1);
+        //End Generate CSV import action
+
+        //Generate File Upload necessary login
+        $fileUpload = '';
+        $fileUploadBase = '$objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance("TYPO3\\\CMS\\\Extbase\\\Object\\\ObjectManager");
+$objectManager->get("TYPO3\\\CMS\\\Extbase\\\Persistence\\\Generic\\\PersistenceManager")->persistAll();
+$storageRepository = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance("TYPO3\\\CMS\\\Core\\\Resource\\\StorageRepository");
+$storage = $storageRepository->findByUid(1);
+if($domainObject->getPropertyName() != "" && strpos($domainObject->getPropertyName(),"/pruebaArchivo/") === false){
+    $saveFolder = "domainObjectFolder/".$domainObject->getUid();
+    if(!$storage->hasFolder($saveFolder)){
+        $storage->createFolder($saveFolder);
+    }
+
+    $fileObject = $storage->addFile($domainObject->getPropertyName(), $storage->getFolder($saveFolder), basename($domainObject->getPropertyName()));
+    $domainObject->setPropertyName($fileObject->getIdentifier());
+    $this->domainObjectRepository->update($domainObject);
+    $objectManager->get("TYPO3\\\CMS\\\Extbase\\\Persistence\\\Generic\\\PersistenceManager")->persistAll();
+    unlink($domainObject->getPropertyName());
+}'."\n";
+        if (in_array($actionName, array('create', 'update'))) {
+            foreach ($domainObject->getProperties() as $domainProperty) {
+                $fileUploadProperty = '';
+                if($domainProperty->getType() == 'File'){
+                    if (in_array($actionName, array('create', 'new'))) {
+                        $parameterName = 'new' . $domainObject->getName();
+                    } else {
+                        $parameterName = lcfirst($domainObject->getName());
+                    }
+                    $fileUploadProperty = $fileUploadBase;
+                    $fileUploadProperty = str_replace('domainObjectRepository', lcfirst($domainObject->getName()) . 'Repository', $fileUploadProperty);
+                    $fileUploadProperty = str_replace('domainObjectFolder', lcfirst($domainObject->getName()), $fileUploadProperty);
+                    $fileUploadProperty = str_replace('domainObject', $parameterName, $fileUploadProperty);
+                    $fileUploadProperty = str_replace('PropertyName', ucfirst($domainProperty->getName()), $fileUploadProperty);
+                }
+                $fileUpload .= $fileUploadProperty;
+            }
+        }
+        $fileUpload = substr($fileUpload, 1);
+
+        if($fileUpload == ''){
+            $fileUpload = 'tmp = 1';
+        }
+
+        //End Generate File Upload necessary login
+
+
         if(count($domainObject->getAnyRelationProperties()) > 0) {
             $string = "";
             foreach ($domainObject->getAnyRelationProperties() as $relation) {
                 $string .= "\$this->view->assign('".$relation->getName()."s', \$this->".$relation->getName() . "Repository->findAll());\n";
             }
             $string = substr($string, 1, -2);
-            error_log("Relaciones: ".$string);
 
             $replacements = array(
                 'domainObjectRepository' => lcfirst($domainObject->getName()) . 'Repository',
@@ -586,7 +695,15 @@ class ClassBuilder implements SingletonInterface
                 'relationsAssings' => $string,
                 'originalExtensionKey' => $domainObject->getExtension()->getOriginalExtensionKey(),
                 'listTemplateForSearch' => "Resources/Private/Templates/".$domainObject->getName()."/List.html",
+                'excelHeader' => $excelHeader,
+                'excelData' => $excelData,
                 'domainObjectName' => 'name = "'.ucfirst(Inflector::pluralize($domainObject->getName())).'"',
+                'fileUpload' => $fileUpload,
+                'csvHeader' => $csvHeader,
+                'csvData' => $csvData,
+                'csvImport' => $csvImport,
+                'propertiesCount' => $propertiesCount
+
             );
         } else {
             $replacements = array(
@@ -597,11 +714,16 @@ class ClassBuilder implements SingletonInterface
                 'relationsAssings' => "tmp = 1",
                 'originalExtensionKey' => $domainObject->getExtension()->getOriginalExtensionKey(),
                 'listTemplateForSearch' => "Resources/Private/Templates/".$domainObject->getName()."/List.html",
+                'excelHeader' => $excelHeader,
+                'excelData' => $excelData,
                 'domainObjectName' => 'name = "'.ucfirst(Inflector::pluralize($domainObject->getName())).'"',
+                'fileUpload' => $fileUpload,
+                'csvHeader' => $csvHeader,
+                'csvData' => $csvData,
+                'csvImport' => $csvImport,
+                'propertiesCount' => $propertiesCount
             );
         }
-        error_log("replacements");
-        error_log(json_encode($replacements));
 
         $this->updateMethodBody($actionMethod, $replacements);
         $this->updateDocComment($actionMethod, $replacements);
@@ -808,15 +930,77 @@ class ClassBuilder implements SingletonInterface
             }
         }
 
-
-
         foreach ($domainObject->getActions() as $action) {
             $actionMethodName = $action->getName() . 'Action';
-            //if (!$this->classObject->methodExists($actionMethodName)) {
+            if (!$this->classObject->methodExists($actionMethodName)) {
                 $actionMethod = $this->buildActionMethod($action, $domainObject);
                 $this->classObject->addMethod($actionMethod);
-            //}
+            }
         }
+
+        $actionMethodName = 'getErrorFlashMessage';
+        if (!$this->classObject->methodExists($actionMethodName)) {
+
+            $actionMethod = $this->templateClassObject->getMethod($actionMethodName);
+            $this->classObject->addMethod($actionMethod);
+        }
+
+        $actionSearch = new Model\DomainObject\Action();
+        $actionSearch->setName("search");
+        $actionMethodName = $actionSearch->getName() . 'Action';
+        if (!$this->classObject->methodExists($actionMethodName)) {
+            $actionMethod = $this->buildActionMethod($actionSearch, $domainObject);
+            $this->classObject->addMethod($actionMethod);
+        }
+
+        $actionGenerateExcel = new Model\DomainObject\Action();
+        $actionGenerateExcel->setName("generateExcel");
+        $actionMethodName = $actionGenerateExcel->getName() . 'Action';
+        if (!$this->classObject->methodExists($actionMethodName)) {
+            $actionMethod = $this->buildActionMethod($actionGenerateExcel, $domainObject);
+            $this->classObject->addMethod($actionMethod);
+        }
+
+        $actionGenerateCSV = new Model\DomainObject\Action();
+        $actionGenerateCSV->setName("generateCSV");
+        $actionMethodName = $actionGenerateCSV->getName() . 'Action';
+        if (!$this->classObject->methodExists($actionMethodName)) {
+            $actionMethod = $this->buildActionMethod($actionGenerateCSV, $domainObject);
+            $this->classObject->addMethod($actionMethod);
+        }
+
+        $actionGenerateCSV = new Model\DomainObject\Action();
+        $actionGenerateCSV->setName("cargarCSV");
+        $actionMethodName = $actionGenerateCSV->getName() . 'Action';
+        if (!$this->classObject->methodExists($actionMethodName)) {
+            $actionMethod = $this->buildActionMethod($actionGenerateCSV, $domainObject);
+            $this->classObject->addMethod($actionMethod);
+        }
+
+        $actionGenerateCSV = new Model\DomainObject\Action();
+        $actionGenerateCSV->setName("procesarCSV");
+        $actionMethodName = $actionGenerateCSV->getName() . 'Action';
+        if (!$this->classObject->methodExists($actionMethodName)) {
+            $actionMethod = $this->templateClassObject->getMethod($actionMethodName);
+            $this->classObject->addMethod($actionMethod);
+        }
+
+        $actionGenerateCSV = new Model\DomainObject\Action();
+        $actionGenerateCSV->setName("guardarCSV");
+        $actionMethodName = $actionGenerateCSV->getName();
+        if (!$this->classObject->methodExists($actionMethodName)) {
+            $actionMethod = $this->buildActionMethod($actionGenerateCSV, $domainObject);
+            $this->classObject->addMethod($actionMethod);
+        }
+
+        $actionGenerateCSV = new Model\DomainObject\Action();
+        $actionGenerateCSV->setName("getDelimiter");
+        $actionMethodName = $actionGenerateCSV->getName();
+        if (!$this->classObject->methodExists($actionMethodName)) {
+            $actionMethod = $this->templateClassObject->getMethod($actionMethodName);
+            $this->classObject->addMethod($actionMethod);
+        }
+
         $this->classFileObject->getNamespace()
             ->setName($this->extension->getNamespaceName() . '\\Controller')
             ->setClasses([$this->classObject]);
