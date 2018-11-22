@@ -42,6 +42,7 @@ class MyController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
      */
     public function newAction()
     {
+        $relationsAssings;
     }
 
     /**
@@ -66,6 +67,7 @@ class MyController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
     public function editAction(\VENDOR\Package\Domain\Model\DomainObject $domainObject)
     {
         $this->view->assign('domainObject', $domainObject);
+        $relationsAssings;
     }
 
     /**

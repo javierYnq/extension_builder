@@ -11,7 +11,7 @@
  ***************************************************************/
 
 $EM_CONF[$_EXTKEY] = [
-    'title' => 'Extension Builder (Modificada CEIS)',
+    'title' => 'Extension Builder (Versión CEIS)',
     'description' => 'The Extension Builder helps you build and manage your Extbase based TYPO3 extensions. Consider using the latest version from https://github.com/FriendsOfTYPO3/extension_builder',
     'category' => 'module',
     'author' => 'Nico de Haen',

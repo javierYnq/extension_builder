@@ -336,6 +336,22 @@ class DomainObject
     }
 
     /**
+     * Get all properties holding relations of any XToManyRelation
+     *
+     * @return \EBT\ExtensionBuilder\Domain\Model\DomainObject\Relation\AnyToManyRelation[]
+     */
+    public function getAnyRelationProperties() {
+        $relationProperties = array();
+        foreach ($this->properties as $property) {
+            if (is_subclass_of($property, '\EBT\ExtensionBuilder\Domain\Model\DomainObject\Relation\AbstractRelation')) {
+                $relationProperties[] = $property;
+            }
+        }
+        return $relationProperties;
+    }
+
+
+    /**
      * @return bool
      */
     public function hasRelations()

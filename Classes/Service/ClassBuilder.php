@@ -542,6 +542,7 @@ class ClassBuilder implements SingletonInterface
      */
     protected function buildActionMethod(Model\DomainObject\Action $action, Model\DomainObject $domainObject)
     {
+        error_log("buildActionMethod");
         $actionName = $action->getName();
         $actionMethodName = $actionName . 'Action';
         if ($this->templateClassObject->methodExists($actionMethodName)) {
@@ -569,12 +570,39 @@ class ClassBuilder implements SingletonInterface
             }
         }
 
-        $replacements = [
-            'domainObjectRepository' => lcfirst($domainObject->getName()) . 'Repository',
-            'domainObject' => lcfirst($domainObject->getName()),
-            'domainObjects' => lcfirst(Inflector::pluralize($domainObject->getName())),
-            'newDomainObject' => 'new' . $domainObject->getName()
-        ];
+        if(count($domainObject->getAnyRelationProperties()) > 0) {
+            $string = "";
+            foreach ($domainObject->getAnyRelationProperties() as $relation) {
+                $string .= "\$this->view->assign('".$relation->getName()."s', \$this->".$relation->getName() . "Repository->findAll());\n";
+            }
+            $string = substr($string, 1, -2);
+            error_log("Relaciones: ".$string);
+
+            $replacements = array(
+                'domainObjectRepository' => lcfirst($domainObject->getName()) . 'Repository',
+                'domainObject' => lcfirst($domainObject->getName()),
+                'domainObjects' => lcfirst(Inflector::pluralize($domainObject->getName())),
+                'newDomainObject' => 'new' . $domainObject->getName(),
+                'relationsAssings' => $string,
+                'originalExtensionKey' => $domainObject->getExtension()->getOriginalExtensionKey(),
+                'listTemplateForSearch' => "Resources/Private/Templates/".$domainObject->getName()."/List.html",
+                'domainObjectName' => 'name = "'.ucfirst(Inflector::pluralize($domainObject->getName())).'"',
+            );
+        } else {
+            $replacements = array(
+                'domainObjectRepository' => lcfirst($domainObject->getName()) . 'Repository',
+                'domainObject' => lcfirst($domainObject->getName()),
+                'domainObjects' => lcfirst(Inflector::pluralize($domainObject->getName())),
+                'newDomainObject' => 'new' . $domainObject->getName(),
+                'relationsAssings' => "tmp = 1",
+                'originalExtensionKey' => $domainObject->getExtension()->getOriginalExtensionKey(),
+                'listTemplateForSearch' => "Resources/Private/Templates/".$domainObject->getName()."/List.html",
+                'domainObjectName' => 'name = "'.ucfirst(Inflector::pluralize($domainObject->getName())).'"',
+            );
+        }
+        error_log("replacements");
+        error_log(json_encode($replacements));
+
         $this->updateMethodBody($actionMethod, $replacements);
         $this->updateDocComment($actionMethod, $replacements);
         return $actionMethod;
@@ -759,12 +787,35 @@ class ClassBuilder implements SingletonInterface
                 $this->classObject->getProperty($repositoryName)->setTag('inject');
             }
         }
+
+        foreach ($domainObject->getAnyRelationProperties() as $relation){
+            $repositoryName = lcfirst($relation->getName() . 'Repository');
+            // now add the property to class Object (or update an existing class Object property)
+            if (!$this->classObject->propertyExists($repositoryName)) {
+                $classProperty = new Model\ClassObject\Property($repositoryName);
+                $classProperty->setName($repositoryName);
+                $classProperty->setDescription($repositoryName);
+                if($relation->getForeignModel()){
+                    $classProperty->setTag('var', $relation->getForeignModel()->getFullyQualifiedDomainRepositoryClassName(), TRUE);
+                }else{
+                    $classProperty->setTag('var', str_replace('Model', 'Repository', $relation->getForeignClassName()).'Repository', TRUE);
+                }
+                $classProperty->addModifier("protected");
+                $this->classObject->setProperty($classProperty);
+            } if (!$this->classObject->getProperty($repositoryName)->isTaggedWith('inject')
+                && !$this->classObject->methodExists('inject' . ucfirst($repositoryName))) {
+                $this->classObject->getProperty($repositoryName)->setTag('inject');
+            }
+        }
+
+
+
         foreach ($domainObject->getActions() as $action) {
             $actionMethodName = $action->getName() . 'Action';
-            if (!$this->classObject->methodExists($actionMethodName)) {
+            //if (!$this->classObject->methodExists($actionMethodName)) {
                 $actionMethod = $this->buildActionMethod($action, $domainObject);
                 $this->classObject->addMethod($actionMethod);
-            }
+            //}
         }
         $this->classFileObject->getNamespace()
             ->setName($this->extension->getNamespaceName() . '\\Controller')

@@ -577,7 +577,8 @@ class FileGenerator
 
                     if ($domainObject->isAggregateRoot()) {
                         $destinationEIDFile = 'Classes/EID/'. $domainObject->getName() .'EID.php';
-                        $fileContents = $this->generateEidCode($domainObject, $mergeWithExistingClass);
+                        $fileContents = $this->generateEidCode($domainObject);
+                        $fileContents = preg_replace('#^[ \t]+$#m', '', $fileContents);
                         $this->writeFile($this->extensionDirectory . $destinationEIDFile, $fileContents);
                         $this->extension->setMD5Hash($this->extensionDirectory . $destinationFile);
                     }
@@ -883,6 +884,7 @@ class FileGenerator
             throw new \Exception('Class file for repository could not be generated');
         }
     }
+
 
     /**
      * Generate the tests for a model
@@ -1432,6 +1434,10 @@ class FileGenerator
         );
     }
 
+    /**
+     * @param DomainObject $domainObject
+     * @return null|string|string[]
+     */
     private function generateEidCode($domainObject)
     {
         return $this->renderTemplate(
