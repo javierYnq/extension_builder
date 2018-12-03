@@ -108,5 +108,4 @@ class Model extends AbstractEntity
     {
         $this->children->detach($childToRemove);
     }
-
 }

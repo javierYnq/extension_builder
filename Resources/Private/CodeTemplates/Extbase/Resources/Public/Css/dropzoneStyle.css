@@ -1,0 +1,309 @@
+/**
+*
+* The MIT License
+*
+* Edited by: Francisco Llanquipichun <francisco.llanquipichun@gmail.com>
+*
+**/
+.dropzone,
+.dropzone *,
+.dropzone-previews,
+.dropzone-previews * {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.dropzone {
+  position: relative;
+  border: 1px solid rgba(0,0,0,0.08);
+  background-color: rgba(0,0,0,0.02);
+  border-radius: 8px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+  height: 115px;
+}
+
+.dropzone:hover {
+    border: 1px solid rgba(0,0,0,0.16);
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
+}
+.dropzone.dz-clickable {
+    cursor: pointer;
+    height: 115px;
+    overflow: hidden;
+}
+
+.dropzone.dz-clickable .dz-message span {
+
+}
+.dropzone.dz-clickable .dz-message {
+    text-align: left;
+    display: inline-block;
+}
+
+.dropzone.dz-clickable .dz-message:hover {
+
+}
+
+.dropzone.dz-clickable .dz-message:active {
+}
+
+.dropzone.dz-clickable * {
+  
+}
+.dropzone .dz-message {
+    height: 100%;
+    left: 0;
+    top: 0;
+    padding: 10px;
+    position: absolute;
+    width: 100%;
+}
+
+.dropzone .dz-message span{
+    border: 4px dashed #cccccc;
+    border-radius: 4px;
+    color: #ccc;
+    cursor:pointer;
+    cursor: hand;
+    display: inline-block;
+    font-size: 20px;
+    font-weight: bold;
+    height: 100%;
+    line-height: 3;
+    padding: 10px;
+    text-align: center;
+    vertical-align: middle;
+    width: 100%;
+    white-space: nowrap;
+
+    -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+       -o-user-select: none;
+          user-select: none;
+}
+
+.dropzone .dz-message span:hover,
+.dropzone .dz-message span:active,
+.dropzone .dz-message span:focus {
+  color: #adadad;
+  border-color: #adadad;
+}
+
+.dropzone .dz-message span:focus {
+  outline: thin dotted #333;
+  outline: 5px auto -webkit-focus-ring-color;
+  outline-offset: -2px;
+}
+
+.dropzone .dz-message span:active {
+  background-image: none;
+  outline: 0;
+  -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+          box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+
+.dropzone .dz-message span:hover {
+  text-decoration: none;
+}
+
+.dropzone.dz-drag-hover {
+  border-color: rgba(0,0,0,0.15);
+  background: rgba(0,0,0,0.04);
+}
+.dropzone.dz-started .dz-message {
+  
+}
+.dropzone .dz-preview,
+.dropzone-previews .dz-preview {
+  background: rgba(255,255,255,0.8);
+  position: relative;
+  display: inline-block;
+  margin: 8px;
+  vertical-align: top;
+  border: 1px solid #acacac;
+  padding: 6px 6px 6px 6px;
+  box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+.dropzone .dz-preview.dz-file-preview [data-dz-thumbnail],
+.dropzone-previews .dz-preview.dz-file-preview [data-dz-thumbnail] {
+  display: none;
+}
+.dropzone .dz-preview .dz-details,
+.dropzone-previews .dz-preview .dz-details {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  background: #ebebeb;
+  padding: 5px;
+  margin-bottom: 22px;
+}
+.dropzone .dz-preview .dz-details .dz-filename,
+.dropzone-previews .dz-preview .dz-details .dz-filename {
+  overflow: hidden;
+  height: 100%;
+}
+.dropzone .dz-preview .dz-details img,
+.dropzone-previews .dz-preview .dz-details img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100px;
+  height: 100px;
+}
+.dropzone .dz-preview .dz-details .dz-size,
+.dropzone-previews .dz-preview .dz-details .dz-size {
+  position: absolute;
+  bottom: -28px;
+  left: 3px;
+  height: 28px;
+  line-height: 28px;
+}
+.dropzone .dz-preview.dz-error .dz-error-mark,
+.dropzone-previews .dz-preview.dz-error .dz-error-mark {
+  display: block;
+}
+.dropzone .dz-preview.dz-success .dz-success-mark,
+.dropzone-previews .dz-preview.dz-success .dz-success-mark {
+  display: block;
+}
+.dropzone .dz-preview:hover .dz-details img,
+.dropzone-previews .dz-preview:hover .dz-details img {
+  display: none;
+}
+.dropzone .dz-preview .dz-success-mark,
+.dropzone-previews .dz-preview .dz-success-mark,
+.dropzone .dz-preview .dz-error-mark,
+.dropzone-previews .dz-preview .dz-error-mark {
+  display: none;
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  font-size: 30px;
+  text-align: center;
+  right: -10px;
+  top: -10px;
+  z-index: 600;
+}
+.dropzone .dz-preview .dz-success-mark,
+.dropzone-previews .dz-preview .dz-success-mark {
+  color: #8cc657;
+}
+.dropzone .dz-preview .dz-error-mark,
+.dropzone-previews .dz-preview .dz-error-mark {
+  color: #ee162d;
+}
+.dropzone .dz-preview .dz-progress,
+.dropzone-previews .dz-preview .dz-progress {
+  position: absolute;
+  top: 100px;
+  left: 6px;
+  right: 6px;
+  height: 6px;
+  background: #d7d7d7;
+  display: none;
+}
+.dropzone .dz-preview .dz-progress .dz-upload,
+.dropzone-previews .dz-preview .dz-progress .dz-upload {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 0%;
+  background-color: #8cc657;
+}
+.dropzone .dz-preview.dz-processing .dz-progress,
+.dropzone-previews .dz-preview.dz-processing .dz-progress {
+  display: block;
+}
+.dropzone .dz-preview .dz-error-message,
+.dropzone-previews .dz-preview .dz-error-message {
+  display: none;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background: #d2322d;
+  border: 1px solid;
+  border-color: rgba(0,0,0,0.2);
+  color: white;
+  padding: 6px;
+  z-index: 500;
+  font-size: 95%;
+  max-height: 114px;
+}
+.dropzone .dz-preview:hover.dz-error .dz-error-message,
+.dropzone-previews .dz-preview:hover.dz-error .dz-error-message {
+  display: block;
+}
+
+.dz-remove:link, .dz-remove:visited, .dz-remove:active {
+  border-radius: 4px;
+  border: 1px solid;
+  border-color: rgba(0,0,0,0.2);
+  color: inherit;
+  display: block;
+  padding: 5px;
+  margin-top: 5px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.dz-remove:hover {
+  background: #d2322d;
+  text-decoration: none;
+  color: white;
+}
+
+.privacy {
+  width: 99%;
+  text-align: right !important;
+  margin-bottom: 8px;
+}
+.privacy input {
+  margin: 0 5px 0 15px;
+}
+
+.privacy .btn {
+  background-image: none;
+  background-color: white;
+}
+.userFedback {
+  text-align: right !important;
+}
+
+.userFedback input {
+  text-align: right;
+  font-size: 90% !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: none !important;
+  cursor: default !important;
+  color: rgba(0,0,0,0.5) !important;
+}
+
+.dz-private-check {
+  position: absolute;
+  bottom: -29px;
+  left: 74px;
+  height: 28px;
+  line-height: 28px;
+}
+
+.input-indexador {
+    margin-bottom: 10px;
+}
+
+.dz-filename{
+    overflow-wrap: break-word;
+}
+.dropzone .dz-preview .dz-details{
+    width: 60px;
+    height: 60px;
+}
+.dropzone .dz-preview .dz-details img{
+    width: 60px;
+    height: 60px;
+}
+.dropzone .dz-preview.dz-processing .dz-progress{
+    top: 66px;
+}

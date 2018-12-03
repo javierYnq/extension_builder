@@ -42,52 +42,59 @@ Otherwise your changes will be overwritten the next time you save the extension 
   </div>
 </div>
 
+    <k:openingTag>f:widget.paginate objects="{domainObject.name -> k:format.lowercaseFirst() -> k:pluralize() -> k:curlyBrackets()}" as="paginated{domainObject.name -> k:format.lowercaseFirst()}" configuration="{itemsPerPage: 20, maximumNumberOfLinks : 10}"</k:openingTag>
 
-    <table  class="table table-striped table-hover table-condensed table-bordered sortable" id="{extension.shortExtensionKey}-table">
-        <k:format.removeMultipleNewlines>
+    <div class="table-responsive">
+        <table  class="table table-striped table-hover table-condensed table-bordered sortable" id="{extension.shortExtensionKey}-table">
+            <k:format.removeMultipleNewlines>
 
-        <thead>
-            <tr>
-                <f:comment>Building up the table header</f:comment>
-                <f:for each="{domainObject.properties}" as="property">
-                    <f:if condition="{property.dataType} != 'PasswordProperty'">
-                        <th><k:openingTag>f:translate key="{property.labelNamespace}" /</k:openingTag></th>
-                    </f:if>
-                </f:for>
-                <th colspan="2">Acciones </th>
-            </tr>
-        </thead>
-        </k:format.removeMultipleNewlines>
-
-        <k:format.removeMultipleNewlines>
-        <f:comment>Creating the f:for which loops through all objects</f:comment>
-
-        <tbody>
-            <k:openingTag>f:for each="{domainObject.name -> k:format.lowercaseFirst() -> k:pluralize() -> k:curlyBrackets()}" as="{domainObject.name -> k:format.lowercaseFirst()}"</k:openingTag>
+            <thead>
                 <tr>
+                    <f:comment>Building up the table header</f:comment>
                     <f:for each="{domainObject.properties}" as="property">
                         <f:if condition="{property.dataType} != 'PasswordProperty'">
-                            <f:if condition="{property.dataType} == 'BooleanProperty'">
-                                <f:then>
-                                    <td>{property.nameToBeDisplayedInFluidTemplate}</td>
-                                </f:then>
-                                <f:else>
-                                    <f:if condition="{property.dataType} == 'ZeroToManyRelation'">
-                                        <f:then><td>{property.nameToBeDisplayedInFluidTemplate}</td></f:then>
-                                        <f:else><td><k:curlyBrackets>{domainObject.name -> k:format.lowercaseFirst()}.{property.nameToBeDisplayedInFluidTemplate}</k:curlyBrackets></td></f:else>
-                                    </f:if>
-                                </f:else>
-                            </f:if>
+                            <th><k:openingTag>f:translate key="{property.labelNamespace}" /</k:openingTag></th>
                         </f:if>
                     </f:for>
-                    <td><k:openingTag>f:link.action class="btn btn-warning btn-sm" action="edit" arguments="<k:curlyBrackets>{domainObject.name -> k:format.lowercaseFirst()} : {domainObject.name -> k:format.lowercaseFirst()}</k:curlyBrackets>"</k:openingTag>Editar<k:openingTag>/f:link.action</k:openingTag></td>
-                    <td><k:openingTag>f:link.action class="btn btn-danger btn-sm confirm-delete" action="delete" arguments="<k:curlyBrackets>{domainObject.name -> k:format.lowercaseFirst()} : {domainObject.name -> k:format.lowercaseFirst()}</k:curlyBrackets>"</k:openingTag>Borrar<k:openingTag>/f:link.action</k:openingTag></td>
+                    <th colspan="2">Acciones </th>
                 </tr>
-            <k:openingTag>/f:for</k:openingTag>
-        </tbody>
+            </thead>
+            </k:format.removeMultipleNewlines>
 
-        </k:format.removeMultipleNewlines>
-    </table>
+            <k:format.removeMultipleNewlines>
+            <f:comment>Creating the f:for which loops through all objects</f:comment>
+
+            <tbody>
+                <f:alias map="{x: 'paginated{domainObject.name -> k:format.lowercaseFirst()}'}">
+                <k:openingTag>f:for each="{x -> k:curlyBrackets()}" as="{domainObject.name -> k:format.lowercaseFirst()}"</k:openingTag>
+                </f:alias>
+                    <tr>
+                        <f:for each="{domainObject.properties}" as="property">
+                            <f:if condition="{property.dataType} != 'PasswordProperty'">
+                                <f:if condition="{property.dataType} == 'BooleanProperty'">
+                                    <f:then>
+                                        <td>{property.nameToBeDisplayedInFluidTemplate}</td>
+                                    </f:then>
+                                    <f:else>
+                                        <f:if condition="{property.dataType} == 'ZeroToManyRelation'">
+                                            <f:then><td>{property.nameToBeDisplayedInFluidTemplate}</td></f:then>
+                                            <f:else><td><k:curlyBrackets>{domainObject.name -> k:format.lowercaseFirst()}.{property.nameToBeDisplayedInFluidTemplate}</k:curlyBrackets></td></f:else>
+                                        </f:if>
+                                    </f:else>
+                                </f:if>
+                            </f:if>
+                        </f:for>
+                        <td><k:openingTag>f:link.action class="btn btn-warning btn-sm" action="edit" arguments="<k:curlyBrackets>{domainObject.name -> k:format.lowercaseFirst()} : {domainObject.name -> k:format.lowercaseFirst()}</k:curlyBrackets>"</k:openingTag>Editar<k:openingTag>/f:link.action</k:openingTag></td>
+                        <td><k:openingTag>f:link.action class="btn btn-danger btn-sm confirm-delete" action="delete" arguments="<k:curlyBrackets>{domainObject.name -> k:format.lowercaseFirst()} : {domainObject.name -> k:format.lowercaseFirst()}</k:curlyBrackets>"</k:openingTag>Borrar<k:openingTag>/f:link.action</k:openingTag></td>
+                    </tr>
+                <k:openingTag>/f:for</k:openingTag>
+            </tbody>
+
+            </k:format.removeMultipleNewlines>
+        </table>
+    </div>
+
+    <k:openingTag>/f:widget.paginate</k:openingTag>
 
     <div id="deleteModal" class="modal fade">
       <div class="modal-dialog">

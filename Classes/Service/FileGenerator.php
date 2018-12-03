@@ -427,7 +427,26 @@ class FileGenerator
                     }
                 }
             }
+
+            //Generate Search Empty template
+            $actionSearch = new DomainObject\Action();
+            $actionSearch->setName("search");
+            $fileContents = $this->generateDomainTemplate(
+                $templateRootFolder . 'Templates/',
+                $domainObject,
+                $actionSearch
+            );
+            $this->writeFile($domainTemplateDirectory . ucfirst($actionSearch->getName()) . '.html', $fileContents);
+
         }
+
+        //Widget Pagination
+        $this->mkdir_deep($absoluteTemplateRootFolder, 'Layouts/ViewHelpers/Widget/Paginate');
+        \TYPO3\CMS\Core\Utility\GeneralUtility::upload_copy_move(
+            ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Private/Layouts/ViewHelpers/Widget/Paginate/Index.html',
+            $absoluteTemplateRootFolder . 'Layouts/ViewHelpers/Widget/Paginate/Index.html'
+        );
+
         if ($hasTemplates) {
             // Generate Layouts directory
             $this->mkdir_deep($absoluteTemplateRootFolder, 'Layouts');
@@ -575,6 +594,7 @@ class FileGenerator
                         $this->extension->setMD5Hash($this->extensionDirectory . $destinationFile);
                     }
 
+                    //Generando Código EID
                     if ($domainObject->isAggregateRoot()) {
                         $destinationEIDFile = 'Classes/EID/'. $domainObject->getName() .'EID.php';
                         $fileContents = $this->generateEidCode($domainObject);
@@ -711,6 +731,109 @@ class FileGenerator
                     );
                 }
             }
+
+            $this->mkdir_deep($publicResourcesDirectory, 'Javascript');
+            $this->javascriptDirectory = $publicResourcesDirectory . 'Javascript/';
+            $this->mkdir_deep($publicResourcesDirectory, 'Images');
+            $this->imagesDirectory = $publicResourcesDirectory . 'Images/';
+            $this->mkdir_deep($publicResourcesDirectory, 'Css');
+            $this->cssDirectory = $publicResourcesDirectory . 'Css/';
+
+            \TYPO3\CMS\Core\Utility\GeneralUtility::upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Javascript/main.js',
+                $this->javascriptDirectory . 'main.js'
+            );
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Javascript/select2.min.js',
+                $this->javascriptDirectory . 'select2.min.js'
+            );
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Javascript/select2_locale_es.js',
+                $this->javascriptDirectory . 'select2_locale_es.js'
+            );
+
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Javascript/bootstrap-datepicker.js',
+                $this->javascriptDirectory . 'bootstrap-datepicker.js'
+            );
+
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Javascript/bootstrap-datepicker.es.js',
+                $this->javascriptDirectory . 'bootstrap-datepicker.es.js'
+            );
+
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Javascript/bootstrap-sortable.js',
+                $this->javascriptDirectory . 'bootstrap-sortable.js'
+            );
+
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Javascript/moment.min.js',
+                $this->javascriptDirectory . 'moment.min.js'
+            );
+
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Javascript/dropzone.js',
+                $this->javascriptDirectory . 'dropzone.js'
+            );
+
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Css/select2.css',
+                $this->cssDirectory . 'select2.css'
+            );
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Css/select2-bootstrap.css',
+                $this->cssDirectory . 'select2-bootstrap.css'
+            );
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Css/datepicker.css',
+                $this->cssDirectory . 'datepicker.css'
+            );
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Css/datepicker3.css',
+                $this->cssDirectory . 'datepicker3.css'
+            );
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Css/bootstrap-sortable.css',
+                $this->cssDirectory . 'bootstrap-sortable.css'
+            );
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Css/dropzone.css',
+                $this->cssDirectory . 'dropzone.css'
+            );
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Css/dropzoneStyle.css',
+                $this->cssDirectory . 'dropzoneStyle.css'
+            );
+
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Css/basic.css',
+                $this->cssDirectory . 'basic.css'
+            );
+
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Css/select2-spinner.gif',
+                $this->cssDirectory . 'select2-spinner.gif'
+            );
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Css/select2x2.png',
+                $this->cssDirectory . 'select2x2.png'
+            );
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/Css/select2.png',
+                $this->cssDirectory . 'select2.png'
+            );
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/images/spritemap.png',
+                $this->imagesDirectory . 'spritemap.png'
+            );
+            $this->upload_copy_move(
+                ExtensionManagementUtility::extPath('extension_builder') . 'Resources/Private/CodeTemplates/Extbase/Resources/Public/images/spritemap@2x.png',
+                $this->imagesDirectory . 'spritemap@2x.png'
+            );
+
+
+
         } catch (\Exception $e) {
             throw new \Exception('Could not create public resources folder, error: ' . $e->getMessage());
         }
@@ -1440,6 +1563,7 @@ class FileGenerator
      */
     private function generateEidCode($domainObject)
     {
+        error_log("lcdomainRepositoryClassName: ".lcfirst($domainObject->getDomainRepositoryClassName()));
         return $this->renderTemplate(
             'Classes/EID/ModelEID.phpt',
             array(
